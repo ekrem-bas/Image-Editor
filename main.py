@@ -14,6 +14,8 @@ pen_size = 5
 # Global değişkenler
 file_path = None
 original_image = None
+non_filtered_original_image = None
+most_original_image = None
 # processing image
 processing_image = None
 image_tk = None
@@ -42,13 +44,15 @@ def resize_image(image, target_width, target_height):
     return resized_image
 
 def open_image():
-    global original_image, image_tk, processing_image
+    global original_image, image_tk, processing_image, most_original_image, non_filtered_original_image
 
     file_path = filedialog.askopenfilename(filetypes=[("JPEG Files", "*.jpeg"), ("PNG Files", "*.png")])
     if not file_path:
         return
 
     original_image = Image.open(file_path)
+    most_original_image = original_image
+    non_filtered_original_image = original_image
     canvas_width = canvas.winfo_width()
     canvas_height = canvas.winfo_height()
 
@@ -59,6 +63,20 @@ def open_image():
     canvas.delete("all")
     canvas.create_image(canvas_width // 2, canvas_height // 2, anchor="center", image=image_tk)
     canvas.image = image_tk  # Referans tutarak görüntünün kaybolmasını engelle
+    
+def return_original_image():
+    global most_original_image, processing_image, original_image
+    canvas_width = canvas.winfo_width()
+    canvas_height = canvas.winfo_height()
+
+    resized_image = resize_image(most_original_image, canvas_width, canvas_height)
+    image_tk = ImageTk.PhotoImage(resized_image)
+    processing_image = most_original_image
+    original_image = most_original_image
+    
+    canvas.delete("all")
+    canvas.create_image(canvas_width // 2, canvas_height // 2, anchor="center", image=image_tk)
+    canvas.image = image_tk
 
 def save_file():
     global processing_image
@@ -108,8 +126,8 @@ def clear_canvas():
     image_tk = ImageTk.PhotoImage(resized_image)
     canvas.delete("all")
     canvas.create_image(canvas.winfo_width() // 2, canvas.winfo_height() // 2, anchor="center", image=image_tk)
+    
     # eğer resimde drawing işlemi yapıldıysa drawing image resmini orijinalle değiştir
-
     processing_image = original_image.copy()
     temp_image = original_image.copy()
     image = original_image.copy()
@@ -159,7 +177,6 @@ def open_filter_menu():
 
 def display_filter(filter_):
     global processing_image, temp_image, image
-    # temp_image = drawing_image.copy()
     temp_image = processing_image.copy()
     image = resize_image(temp_image, canvas.winfo_width(), canvas.winfo_height())
     if filter_ == "Black and White":
@@ -187,7 +204,9 @@ def display_filter(filter_):
         image = image.filter(ImageFilter.DETAIL)
         temp_image = temp_image.filter(ImageFilter.DETAIL)
     else:
+        temp_image = non_filtered_original_image
         image = resize_image(temp_image, canvas.winfo_width(), canvas.winfo_height())
+        processing_image = temp_image
         filter_menu.destroy()
     image_tk = ImageTk.PhotoImage(image)
     canvas.delete("all")
@@ -195,8 +214,9 @@ def display_filter(filter_):
     canvas.image = image_tk 
 
 def apply_filter():
-    global processing_image, temp_image
+    global processing_image, temp_image, original_image
     processing_image = temp_image
+    original_image = temp_image
     filter_menu.destroy()
 
 def toggle_crop():
@@ -224,7 +244,7 @@ def draw_crop_rectangle(event):
     crop_rect = canvas.create_rectangle(start_x, start_y, end_x, end_y, outline="red")
 
 def crop_image(event):
-    global original_image, processing_image, image_tk, ratio, offset_x, offset_y, crop_rect
+    global original_image, processing_image, image_tk, ratio, offset_x, offset_y, crop_rect, non_filtered_original_image
 
     if not crop_rect:
         return
@@ -248,6 +268,7 @@ def crop_image(event):
 
     original_image = original_image.crop((original_x1, original_y1, original_x2, original_y2))
     processing_image = cropped_image
+    non_filtered_original_image = cropped_image
 
 
     resized_image = resize_image(cropped_image, canvas.winfo_width(), canvas.winfo_height())
@@ -395,9 +416,9 @@ crop_button.pack()
 rotate_button = tk.Button(left_frame, text="Rotate", highlightbackground="white", command=rotate_image)
 rotate_button.pack()
 
-# textbox
-# text_box = tk.Entry(master=left_frame, highlightbackground="white", bg="white", fg="black", highlightthickness=0)
-# text_box.pack()
+# return image button
+return_original_image_button = tk.Button(left_frame, text="Return Back", highlightbackground="white", command=return_original_image)
+return_original_image_button.pack()
 
 # add text
 add_text_button = tk.Button(left_frame, text="Add Text", highlightbackground="white", command=toggle_text)
