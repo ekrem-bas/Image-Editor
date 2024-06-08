@@ -1,6 +1,6 @@
 import tkinter as tk
-from tkinter import filedialog, colorchooser
-from PIL import Image, ImageTk, ImageDraw, ImageOps, ImageFilter, ImageDraw2
+from tkinter import filedialog, colorchooser, simpledialog
+from PIL import Image, ImageTk, ImageDraw, ImageOps, ImageFilter, ImageFont
 
 # Ekran
 root = tk.Tk()
@@ -27,6 +27,8 @@ offset_y = 0
 crop_rect = None
 start_x = None
 start_y = None
+
+text_rect = None
 
 def resize_image(image, target_width, target_height):
     original_width, original_height = image.size
@@ -65,11 +67,6 @@ def save_file():
     if not save_file_path:
         return
     
-    # Resmin son halini kaydet
-    # if filtering_image != original_image:
-    #     save_image = filtering_image
-    # else:
-    #     save_image = drawing_image
     save_image = processing_image
 
     save_image.save(save_file_path)
@@ -120,33 +117,44 @@ def clear_canvas():
 def open_filter_menu():
         global filter_menu
         filter_menu = tk.Toplevel(root)
-        filter_menu.geometry("250x350")
+        filter_menu.geometry("250x425")
         filter_menu.title("Select a filter")
         filter_menu.config(bg= "white")
         
         # black and white button
         black_and_white_button = tk.Button(master= filter_menu, text= "Black and White", command= lambda : display_filter("Black and White"), highlightbackground= "white", fg= "black")
-        black_and_white_button.pack(pady= 15)
+        black_and_white_button.pack(pady=15)
         # blur button
         blur_button = tk.Button(master= filter_menu, text= "Blur", command= lambda : display_filter("Blur"), highlightbackground= "white", fg= "black")
-        blur_button.pack(after= black_and_white_button)
+        blur_button.pack()
         # sharpen button
         sharpen_button = tk.Button(master= filter_menu, text= "Sharpen", command= lambda : display_filter("Sharpen"), highlightbackground= "white", fg= "black")
-        sharpen_button.pack(pady= 15)
+        sharpen_button.pack(pady=15)
         # smooth button
         smooth_button = tk.Button(master= filter_menu, text= "Smooth", command= lambda : display_filter("Smooth"), highlightbackground= "white", fg= "black")
         smooth_button.pack()
         # emboss button
         emboss_button = tk.Button(master= filter_menu, text= "Emboss", command= lambda : display_filter("Emboss"), highlightbackground="white", fg= "black")
-        emboss_button.pack(pady= 15)
+        emboss_button.pack(pady=15)
+        # contour button
+        contour_button = tk.Button(master= filter_menu, text= "Contour", command= lambda : display_filter("Contour"), highlightbackground="white", fg= "black")
+        contour_button.pack()
+        # edge enhance button
+        edge_enhance_button = tk.Button(master= filter_menu, text= "Edge Enhance", command= lambda : display_filter("Edge Enhance"), highlightbackground="white", fg= "black")
+        edge_enhance_button.pack(pady=15)
+        # detail button
+        detail_button = tk.Button(master= filter_menu, text= "Detail", command= lambda : display_filter("Detail"), highlightbackground="white", fg= "black")
+        detail_button.pack()
         # TODO : bu iki butonu yan yana koymak için bir küçük frame oluştur
+        bottom_frame = tk.Frame(master=filter_menu, bg="white")
+        bottom_frame.pack(pady=15)
         # apply button
-        apply_button = tk.Button(master= filter_menu, text= "Apply Filter", command= apply_filter, highlightbackground="white", fg="Black")
-        apply_button.pack()
+        apply_button = tk.Button(master= bottom_frame, text= "Apply Filter", command= apply_filter, highlightbackground="white", fg="Black")
+        apply_button.pack(side="left", padx=7.5)
         
         # clear filter button
-        clear_button = tk.Button(master= filter_menu, text= "Clear", command= lambda : display_filter("Clear"), highlightbackground= "white", fg= "black")
-        clear_button.pack()
+        clear_button = tk.Button(master= bottom_frame, text= "Clear", command= lambda : display_filter("Clear"), highlightbackground= "white", fg= "black")
+        clear_button.pack(side="left", padx=7.5)
         
 
 def display_filter(filter_):
@@ -156,7 +164,7 @@ def display_filter(filter_):
     image = resize_image(temp_image, canvas.winfo_width(), canvas.winfo_height())
     if filter_ == "Black and White":
         image = ImageOps.grayscale(image)
-        temp_image = ImageOps.grayscale(processing_image)
+        temp_image = ImageOps.grayscale(temp_image)
     elif filter_ == "Blur":
         image = image.filter(ImageFilter.BLUR)
         temp_image = temp_image.filter(ImageFilter.BLUR)
@@ -169,6 +177,15 @@ def display_filter(filter_):
     elif filter_ == "Emboss":
         image = image.filter(ImageFilter.EMBOSS)
         temp_image = temp_image.filter(ImageFilter.EMBOSS)
+    elif filter_ == "Contour":
+        image = image.filter(ImageFilter.CONTOUR)
+        temp_image = temp_image.filter(ImageFilter.CONTOUR)
+    elif filter_ == "Edge Enhance":
+        image = image.filter(ImageFilter.EDGE_ENHANCE)
+        temp_image = temp_image.filter(ImageFilter.EDGE_ENHANCE)
+    elif filter_ == "Detail":
+        image = image.filter(ImageFilter.DETAIL)
+        temp_image = temp_image.filter(ImageFilter.DETAIL)
     else:
         image = resize_image(temp_image, canvas.winfo_width(), canvas.winfo_height())
         filter_menu.destroy()
@@ -241,6 +258,92 @@ def crop_image(event):
     canvas.image = image_tk
 
     crop_rect = None
+    
+    # crop kapansın diye
+    toggle_crop()
+
+# rotate
+def rotate_image():
+    global original_image, processing_image, image_tk
+
+    # Resmi 90 derece döndür
+    original_image = original_image.rotate(-90, expand=True)
+    processing_image = processing_image.rotate(-90, expand=True)
+
+    # Döndürülen resmi yeniden boyutlandır
+    resized_image = resize_image(processing_image, canvas.winfo_width(), canvas.winfo_height())
+    image_tk = ImageTk.PhotoImage(resized_image)
+
+    # Döndürülen resmi canvas üzerinde göster
+    canvas.delete("all")
+    canvas.create_image(canvas.winfo_width() // 2, canvas.winfo_height() // 2, anchor="center", image=image_tk)
+    canvas.image = image_tk
+    
+def start_text(event):
+    global text_start_x, text_start_y, text_rect
+    text_start_x, text_start_y = event.x, event.y
+    if text_rect:
+        canvas.delete(text_rect)
+        text_rect = None
+
+def draw_text_rectangle(event):
+    global text_rect, text_rect_height
+    if text_rect:
+        canvas.delete(text_rect)
+    end_x, end_y = event.x, event.y
+    text_rect_height = end_y - text_start_y
+    text_rect = canvas.create_rectangle(text_start_x, text_start_y, end_x, end_y, outline="blue")
+
+def add_text(event):
+    global processing_image, image_tk, ratio, offset_x, offset_y, text_start_x, text_start_y, text_rect
+
+    if not text_rect:
+        return
+
+    x1 = min(text_start_x, event.x)
+    y1 = min(text_start_y, event.y)
+
+    x1 = max(0, x1 - offset_x)
+    y1 = max(0, y1 - offset_y)
+
+    original_x1 = int(x1 / ratio)
+    original_y1 = int(y1 / ratio)
+
+    text = simpledialog.askstring("Input", "Enter text to add:")
+    if not text:
+        canvas.delete(text_rect)
+        text_rect = None
+        toggle_text()
+        return
+
+    # font_size = int(simpledialog.askstring("Input", "Enter font size:"))
+    font_size = text_rect_height
+    font_color = colorchooser.askcolor(title="Select Font Color")[1]
+    font = ImageFont.load_default(font_size)
+
+    draw = ImageDraw.Draw(processing_image)
+    draw.text((original_x1, original_y1), text, font=font, fill=font_color)
+
+    resized_image = resize_image(processing_image, canvas.winfo_width(), canvas.winfo_height())
+    image_tk = ImageTk.PhotoImage(resized_image)
+
+    canvas.delete("all")
+    canvas.create_image(canvas.winfo_width() // 2, canvas.winfo_height() // 2, anchor="center", image=image_tk)
+    canvas.image = image_tk
+
+    text_rect = None
+
+    toggle_text()
+
+def toggle_text():
+    if canvas.bind("<ButtonPress-1>"):
+        canvas.unbind("<ButtonPress-1>")
+        canvas.unbind("<B1-Motion>")
+        canvas.unbind("<ButtonRelease-1>")
+    else:
+        canvas.bind("<ButtonPress-1>", start_text)
+        canvas.bind("<B1-Motion>", draw_text_rectangle)
+        canvas.bind("<ButtonRelease-1>", add_text)
 
 # Sol çerçeve
 left_frame = tk.Frame(root, width=200, height=800, bg="white")
@@ -285,7 +388,19 @@ filter_button = tk.Button(left_frame, text= "Select a filter", highlightbackgrou
 filter_button.pack()
 
 # crop button
-crop_button = tk.Button(left_frame, text="Toggle Crop", highlightbackground="white", command=toggle_crop)
+crop_button = tk.Button(left_frame, text="Crop", highlightbackground="white", command=toggle_crop)
 crop_button.pack()
+
+# rotate button
+rotate_button = tk.Button(left_frame, text="Rotate", highlightbackground="white", command=rotate_image)
+rotate_button.pack()
+
+# textbox
+# text_box = tk.Entry(master=left_frame, highlightbackground="white", bg="white", fg="black", highlightthickness=0)
+# text_box.pack()
+
+# add text
+add_text_button = tk.Button(left_frame, text="Add Text", highlightbackground="white", command=toggle_text)
+add_text_button.pack()
 
 root.mainloop()
