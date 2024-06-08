@@ -2,94 +2,90 @@ import tkinter as tk
 from tkinter import filedialog, colorchooser, simpledialog
 from PIL import Image, ImageTk, ImageDraw, ImageOps, ImageFilter, ImageFont
 
-# Ekran
+# Window
 root = tk.Tk()
 root.geometry("1000x600")
 root.title("Image Editor")
 
-# Varsayılan kalem rengi ve boyutu
+# default pen size and color
 pen_color = "Black"
 pen_size = 5
 
-# Global değişkenler
+# variables
 file_path = None
 original_image = None
-non_filtered_original_image = None
-most_original_image = None
-# processing image
+unmodified_image = None
 processing_image = None
 image_tk = None
 draw = None
-# ratio
+
+# aspect ratio
 ratio = 1
 offset_x = 0
 offset_y = 0
 
-# crop
+# crop variables
 crop_rect = None
 start_x = None
 start_y = None
 
+# text variable
 text_rect = None
 
-def resize_image(image, target_width, target_height):
+def resize_image(image, target_width, target_height) -> Image:
+    # original image size
     original_width, original_height = image.size
     global ratio, offset_x, offset_y
+    # ratio
     ratio = min(target_width / original_width, target_height / original_height)
+    # new size for canvas
     new_width = int(original_width * ratio)
     new_height = int(original_height * ratio)
+    # offsets for drawing and cropping
     offset_x = (target_width - new_width) // 2
     offset_y = (target_height - new_height) // 2
+    # resize image and return it
     resized_image = image.resize((new_width, new_height), Image.LANCZOS)
     return resized_image
 
 def open_image():
-    global original_image, image_tk, processing_image, most_original_image, non_filtered_original_image
+    global original_image, image_tk, processing_image, unmodified_image
 
-    file_path = filedialog.askopenfilename(filetypes=[("JPEG Files", "*.jpeg"), ("PNG Files", "*.png")])
-    if not file_path:
+    # image path
+    image_path = filedialog.askopenfilename(filetypes=[("JPEG Files", "*.jpeg"), ("PNG Files", "*.png")])
+    if not image_path:
         return
 
-    original_image = Image.open(file_path)
-    most_original_image = original_image
-    non_filtered_original_image = original_image
+    # original image
+    original_image = Image.open(image_path)
+    # unmodified image to return back
+    unmodified_image = original_image
+    # canvas size
     canvas_width = canvas.winfo_width()
     canvas_height = canvas.winfo_height()
-
+    # resize the image to fit into canvas
     resized_image = resize_image(original_image, canvas_width, canvas_height)
     image_tk = ImageTk.PhotoImage(resized_image)
+    # processing image for draw, crop, filter operations
     processing_image = original_image.copy()
-
+    # clear canvas before show image
     canvas.delete("all")
+    # show image to canvas
     canvas.create_image(canvas_width // 2, canvas_height // 2, anchor="center", image=image_tk)
-    canvas.image = image_tk  # Referans tutarak görüntünün kaybolmasını engelle
-    
-def return_original_image():
-    global most_original_image, processing_image, original_image
-    canvas_width = canvas.winfo_width()
-    canvas_height = canvas.winfo_height()
-
-    resized_image = resize_image(most_original_image, canvas_width, canvas_height)
-    image_tk = ImageTk.PhotoImage(resized_image)
-    processing_image = most_original_image
-    original_image = most_original_image
-    
-    canvas.delete("all")
-    canvas.create_image(canvas_width // 2, canvas_height // 2, anchor="center", image=image_tk)
+    # canvas image reference
     canvas.image = image_tk
-
+    
 def save_file():
     global processing_image
-
-    save_file_path = filedialog.asksaveasfilename(defaultextension=".png", filetypes=[("PNG files", "*.png"), ("JPEG files", "*.jpeg")])
-    if not save_file_path:
+    # save path
+    save_image_path = filedialog.asksaveasfilename(defaultextension=".png", filetypes=[("PNG files", "*.png"), ("JPEG files", "*.jpeg")])
+    if not save_image_path:
         return
-    
-    save_image = processing_image
-
-    save_image.save(save_file_path)
+    # save processed image
+    processing_image.save(save_image_path)
 
 def toggle_draw():
+    # bind and unbind operation for draw
     if canvas.bind("<B1-Motion>"):
         canvas.unbind("<B1-Motion>")
     else:
@@ -97,19 +93,21 @@ def toggle_draw():
         
 def draw_on_image(event):
     global processing_image, ratio, offset_x, offset_y, draw
+    # coordinates
     x, y = event.x - offset_x, event.y - offset_y
     x1, y1 = (x - pen_size), (y - pen_size)
     x2, y2 = (x + pen_size), (y + pen_size)
+    # create drawing on canvas
     canvas.create_oval(x1 + offset_x, y1 + offset_y, x2 + offset_x, y2 + offset_y, fill=pen_color, outline=pen_color)
 
-    # Orijinal resimdeki koordinatları doğru şekilde ölçeklendirin
+    # scale coordinates to original coordinates for original image
     draw = ImageDraw.Draw(processing_image)
     original_x1 = int(x1 / ratio)
     original_y1 = int(y1 / ratio)
     original_x2 = int(x2 / ratio)
     original_y2 = int(y2 / ratio)
     
-    # Çizim boyutlarını orijinal boyutlara göre ayarlayın
+    # draw on original sized image
     draw.ellipse([original_x1, original_y1, original_x2, original_y2], fill=pen_color, outline=pen_color)
 
 def change_color():
@@ -122,15 +120,16 @@ def change_pen_size(event=None):
 
 def clear_canvas():
     global image_tk, original_image, processing_image, temp_image, image
-    resized_image = resize_image(original_image, canvas.winfo_width(), canvas.winfo_height())
+    # clear canvas and return the unmodified image
+    resized_image = resize_image(unmodified_image, canvas.winfo_width(), canvas.winfo_height())
     image_tk = ImageTk.PhotoImage(resized_image)
     canvas.delete("all")
     canvas.create_image(canvas.winfo_width() // 2, canvas.winfo_height() // 2, anchor="center", image=image_tk)
     
-    # eğer resimde drawing işlemi yapıldıysa drawing image resmini orijinalle değiştir
-    processing_image = original_image.copy()
-    temp_image = original_image.copy()
-    image = original_image.copy()
+    # clear processing image 
+    processing_image = unmodified_image
+    temp_image = unmodified_image.copy()
+    image = unmodified_image.copy()
     
 def open_filter_menu():
         global filter_menu
@@ -138,6 +137,7 @@ def open_filter_menu():
         filter_menu.geometry("250x425")
         filter_menu.title("Select a filter")
         filter_menu.config(bg= "white")
+        filter_menu.grab_set()
         
         # black and white button
         black_and_white_button = tk.Button(master= filter_menu, text= "Black and White", command= lambda : display_filter("Black and White"), highlightbackground= "white", fg= "black")
@@ -204,9 +204,7 @@ def display_filter(filter_):
         image = image.filter(ImageFilter.DETAIL)
         temp_image = temp_image.filter(ImageFilter.DETAIL)
     else:
-        temp_image = non_filtered_original_image
         image = resize_image(temp_image, canvas.winfo_width(), canvas.winfo_height())
-        processing_image = temp_image
         filter_menu.destroy()
     image_tk = ImageTk.PhotoImage(image)
     canvas.delete("all")
@@ -244,7 +242,7 @@ def draw_crop_rectangle(event):
     crop_rect = canvas.create_rectangle(start_x, start_y, end_x, end_y, outline="red")
 
 def crop_image(event):
-    global original_image, processing_image, image_tk, ratio, offset_x, offset_y, crop_rect, non_filtered_original_image
+    global original_image, processing_image, image_tk, ratio, offset_x, offset_y, crop_rect
 
     if not crop_rect:
         return
@@ -268,7 +266,6 @@ def crop_image(event):
 
     original_image = original_image.crop((original_x1, original_y1, original_x2, original_y2))
     processing_image = cropped_image
-    non_filtered_original_image = cropped_image
 
 
     resized_image = resize_image(cropped_image, canvas.winfo_width(), canvas.winfo_height())
@@ -395,33 +392,41 @@ ps_spin_box = tk.Spinbox(pen_size_frame, from_=1, to=10, command=change_pen_size
 ps_spin_box.pack(padx=15)
 ps_spin_box.bind("<Return>", change_pen_size)
 
-draw_button = tk.Button(master=pen_size_frame, text="Toggle Draw", highlightbackground="white", command=toggle_draw)
-draw_button.pack()
+# draw-clear frame
+draw_clear_frame = tk.Frame(master=pen_size_frame, bg="white")
+draw_clear_frame.pack(ipadx=30)
 
-clear_canvas_button = tk.Button(master=left_frame, text="Clear", highlightbackground="white", command=clear_canvas)
-clear_canvas_button.pack()
+# draw button
+draw_button = tk.Button(master=draw_clear_frame, text="Draw", highlightbackground="white", command=toggle_draw)
+draw_button.pack(side="left")
 
-save_button = tk.Button(master=left_frame, text="Save", highlightbackground="white", command=save_file)
-save_button.pack()
+# clear button
+clear_canvas_button = tk.Button(master=draw_clear_frame, text="Clear", highlightbackground="white", command=clear_canvas)
+clear_canvas_button.pack(side="right")
+
+
+# crop-rotate frame
+crop_rotate_frame = tk.Frame(master=left_frame, bg="white")
+crop_rotate_frame.pack(ipadx=30)
+
+# crop button
+crop_button = tk.Button(crop_rotate_frame, text="Crop", highlightbackground="white", command=toggle_crop)
+crop_button.pack(side="left")
+
+# rotate button
+rotate_button = tk.Button(crop_rotate_frame, text="Rotate", highlightbackground="white", command=rotate_image)
+rotate_button.pack(side="right")
 
 # filter menu
 filter_button = tk.Button(left_frame, text= "Select a filter", highlightbackground= "white", command= open_filter_menu)
-filter_button.pack()
-
-# crop button
-crop_button = tk.Button(left_frame, text="Crop", highlightbackground="white", command=toggle_crop)
-crop_button.pack()
-
-# rotate button
-rotate_button = tk.Button(left_frame, text="Rotate", highlightbackground="white", command=rotate_image)
-rotate_button.pack()
-
-# return image button
-return_original_image_button = tk.Button(left_frame, text="Return Back", highlightbackground="white", command=return_original_image)
-return_original_image_button.pack()
+filter_button.pack(pady=15)
 
 # add text
 add_text_button = tk.Button(left_frame, text="Add Text", highlightbackground="white", command=toggle_text)
 add_text_button.pack()
+
+# save button
+save_button = tk.Button(master=left_frame, text="Save", highlightbackground="white", command=save_file)
+save_button.pack(pady=15)
 
 root.mainloop()
