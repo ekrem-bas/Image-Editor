@@ -38,17 +38,28 @@ def open_image():
         canvas.create_image(0, 0, image = image, anchor = "nw")
 
 # draw function
-def draw(event):
-        x1 = (event.x - pen_size)
-        y1 = (event.y - pen_size)
-        x2 = (event.x + pen_size)
-        y2 = (event.y + pen_size)
-        canvas.create_oval(x1, y1, x2, y2, fill= pen_color, outline= "")
+draw_flag = False
+def draw():
+        global draw_flag
+        draw_flag = not draw_flag
+        if draw_flag:
+                canvas.bind("<B1-Motion>", start_draw)
+        else:
+                canvas.unbind("<B1-Motion>")   
+        
+
+def start_draw(event):
+                x1 = (event.x - pen_size)
+                y1 = (event.y - pen_size)
+                x2 = (event.x + pen_size)
+                y2 = (event.y + pen_size)
+                canvas.create_oval(x1, y1, x2, y2, fill= pen_color, outline= "")   
+
 # change color function        
 def change_color():
         global pen_color
         pen_color = colorchooser.askcolor(title= "Select Pen Color")[1]
-
+        
 # change pen size function
 def change_pen_size(event = None):
         global pen_size
@@ -65,7 +76,7 @@ def open_filter_menu():
         filter_menu.geometry("250x350")
         filter_menu.title("Select a filter")
         filter_menu.config(bg= "white")
-
+        
         # black and white button
         black_and_white_button = tk.Button(master= filter_menu, text= "Sharpen", command= lambda : apply_filter("Black and White"), highlightbackground= "white", fg= "black")
         black_and_white_button.pack(pady= 15)
@@ -84,7 +95,7 @@ def open_filter_menu():
         # clear filter button
         clear_button = tk.Button(master= filter_menu, text= "Clear", command= lambda : apply_filter("Clear"), highlightbackground= "white", fg= "black")
         clear_button.pack()
-
+        
 # TODO : Add filters  (clear button is completed) / continue to video from 39:11
 # TODO : look at imageOps contain function (something about resizing, it can be used for the crop operation)
 # apply filter function
@@ -107,7 +118,7 @@ def apply_filter(filter_):
         image2 = ImageTk.PhotoImage(image)
         canvas.image = image2
         canvas.create_image(0, 0, image = image2, anchor = "nw")  
-
+        
 
 # left part of the screen - left frame
 left_frame = tk.Frame(root, width=200, height=800, bg="white")
@@ -118,7 +129,7 @@ right_frame = tk.Frame(root, width= 1000, height= 800, bg= "white")
 right_frame.pack(fill= "both", expand= True)
 
 # canvas
-canvas = tk.Canvas(right_frame, width= 200, height= 800, bg= "white")
+canvas = tk.Canvas(right_frame, width= 200, height= 800, bg= "grey", highlightthickness= 0)
 canvas.pack(fill= "both", expand= True)
 
 # image button
@@ -141,13 +152,18 @@ ps_spin_box.pack(padx= 15)
 # when user press enter on spinbox it will change the pen size
 ps_spin_box.bind("<Return>", change_pen_size)
 
+
+draw_button = tk.Button(master= pen_size_frame, text= "Toggle Draw", highlightbackground= "white", command= draw)
+draw_button.pack()
+
 # clear button
 clear_canvas_button = tk.Button(master= left_frame, text= "Clear", highlightbackground= "white", command= clear_canvas)
 clear_canvas_button.pack()
 
 # drawing
 # TODO: add button to draw on picture
-canvas.bind("<B1-Motion>", draw)
+
+
 
 # filter menu
 filter_button = tk.Button(left_frame, text= "Select a filter", highlightbackground= "white", command= open_filter_menu)
