@@ -17,10 +17,12 @@ original_image = None
 filtering_image = original_image
 image_tk = None
 draw = None
+# ratio
+ratio = 1
 
 def resize_image(image, target_width, target_height):
-    # Aspect ratio'yu koruyarak resmi yeniden boyutlandır
     original_width, original_height = image.size
+    global ratio
     ratio = min(target_width / original_width, target_height / original_height)
     new_width = int(original_width * ratio)
     new_height = int(original_height * ratio)
@@ -28,7 +30,7 @@ def resize_image(image, target_width, target_height):
     return resized_image
 
 def open_image():
-    global original_image, image_tk
+    global original_image, image_tk, drawing_image
 
     file_path = filedialog.askopenfilename(filetypes=[("JPEG Files", "*.jpeg"), ("PNG Files", "*.png")])
     if not file_path:
@@ -41,24 +43,12 @@ def open_image():
 
     resized_image = resize_image(original_image, canvas_width, canvas_height)
     image_tk = ImageTk.PhotoImage(resized_image)
-    global drawing_image
-    drawing_image = original_image
+    drawing_image = original_image.copy()
 
     canvas.delete("all")
     canvas.create_image(canvas_width // 2, canvas_height // 2, anchor="center", image=image_tk)
     canvas.image = image_tk  # Referans tutarak görüntünün kaybolmasını engelle
 
-def on_canvas_resized(event):
-    if original_image:
-        canvas_width = event.width
-        canvas_height = event.height
-
-        resized_image = resize_image(original_image, canvas_width, canvas_height)
-        image_tk = ImageTk.PhotoImage(resized_image)
-
-        canvas.delete("all")
-        canvas.create_image(canvas_width // 2, canvas_height // 2, anchor="center", image=image_tk)
-        canvas.image = image_tk  # Referans tutarak görüntünün kaybolmasını engelle
 
 def save_file():
     global drawing_image
@@ -66,14 +56,29 @@ def save_file():
     if save_file_path and drawing_image:
         drawing_image.save(save_file_path)
 
+
 def draw_on_image(event):
     global drawing_image
+    canvas_width = canvas.winfo_width()
+    canvas_height = canvas.winfo_height()
+    
     x, y = event.x, event.y
     x1, y1 = (x - pen_size), (y - pen_size)
     x2, y2 = (x + pen_size), (y + pen_size)
     canvas.create_oval(x1, y1, x2, y2, fill=pen_color, outline=pen_color)
+
+    # Orijinal resimdeki koordinatları doğru şekilde ölçeklendirin
     draw = ImageDraw.Draw(drawing_image)
-    draw.ellipse([x1 , y1, x2, y2], fill=pen_color, outline=pen_color)
+    original_x1 = int(x1 * original_image.width / canvas_width)
+    original_y1 = int(y1 * original_image.height / canvas_height)
+    original_x2 = int(x2 * original_image.width / canvas_width)
+    original_y2 = int(y2 * original_image.height / canvas_height)
+    
+    # Çizim boyutlarını orijinal boyutlara göre ayarlayın
+    original_pen_size = int(pen_size * original_image.width / canvas_width)
+    
+    # Çizim boyutunu doğru şekilde ölçeklendir
+    draw.ellipse([original_x1, original_y1, original_x2, original_y2], fill=pen_color, outline=pen_color)
 
 def toggle_draw():
     if canvas.bind("<B1-Motion>"):
