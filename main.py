@@ -107,7 +107,8 @@ def change_pen_size(event=None):
 
 def clear_canvas():
     global image_tk, original_image, processing_image, temp_image, image
-    image_tk = ImageTk.PhotoImage(original_image)
+    resized_image = resize_image(original_image, canvas.winfo_width(), canvas.winfo_height())
+    image_tk = ImageTk.PhotoImage(resized_image)
     canvas.delete("all")
     canvas.create_image(canvas.winfo_width() // 2, canvas.winfo_height() // 2, anchor="center", image=image_tk)
     # eğer resimde drawing işlemi yapıldıysa drawing image resmini orijinalle değiştir
@@ -233,7 +234,7 @@ def crop_image(event):
 
 
     resized_image = resize_image(cropped_image, canvas.winfo_width(), canvas.winfo_height())
-    image_tk = ImageTk.PhotoImage(cropped_image)
+    image_tk = ImageTk.PhotoImage(resized_image)
 
     canvas.delete("all")
     canvas.create_image(canvas.winfo_width() // 2, canvas.winfo_height() // 2, anchor="center", image=image_tk)
