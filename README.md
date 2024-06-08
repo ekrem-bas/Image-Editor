@@ -17,7 +17,7 @@ This project is a simple image editor built with Python's Tkinter library and th
 
 1. Clone the repository:
     ```sh
-    git clone https://github.com/yourusername/image-editor.git
+    git clone https://github.com/ekrem-bas/Basic-Image-Editor-Python-Project.git
     cd image-editor
     ```
 
@@ -61,18 +61,10 @@ pip install Pillow
 
 ## Screenshots
 
-<img width="1112" alt="Ekran Resmi 2024-06-08 18 34 02" src="https://github.com/ekrem-bas/Basic-Image-Editor-Python-Project/assets/145195096/ef2ae46c-dea1-44f7-941b-6dd30591d79d">
+![1](https://github.com/ekrem-bas/Basic-Image-Editor-Python-Project/assets/145195096/094865b0-e7cb-4ac8-a7b2-e2911f77bd1e)
 
-<img width="1112" alt="Ekran Resmi 2024-06-08 18 34 39" src="https://github.com/ekrem-bas/Basic-Image-Editor-Python-Project/assets/145195096/0a50c83d-1a2c-45fb-9dd8-46bc156ef9b2">
+![2](https://github.com/ekrem-bas/Basic-Image-Editor-Python-Project/assets/145195096/1173752f-fb89-4cd4-8e12-fa8a8e70f015)
 
-<img width="1112" alt="Ekran Resmi 2024-06-08 18 35 18" src="https://github.com/ekrem-bas/Basic-Image-Editor-Python-Project/assets/145195096/be1ed2cf-fc49-45e9-927a-5ac4f0d402d6">
+![3](https://github.com/ekrem-bas/Basic-Image-Editor-Python-Project/assets/145195096/4e64a303-8d8f-4a43-b029-e92b572ded81)
 
-<img width="1112" alt="Ekran Resmi 2024-06-08 18 36 03" src="https://github.com/ekrem-bas/Basic-Image-Editor-Python-Project/assets/145195096/d1cbd10a-7e68-4002-9a78-069630c7aecc">
-
-
-
-
-
-
-
-
+![4](https://github.com/ekrem-bas/Basic-Image-Editor-Python-Project/assets/145195096/b1f37c91-887a-45ad-911a-a68eb4ecd06c)
