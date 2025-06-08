@@ -1,63 +1,92 @@
-# Image Editor
+# Python Image Editor
 
-This project is a simple image editor built with Python's Tkinter library and the Python Imaging Library (PIL). The editor allows users to open, edit, and save images with various functionalities including drawing, cropping, rotating, adding text, and applying filters.
+A user-friendly desktop image editing application built with Python, Tkinter, and the Pillow library. This application provides a simple graphical user interface to perform essential image editing operations, including drawing, cropping, rotating, adding text, and applying a variety of artistic filters.
 
-## Features
+![Screenshot of the Image Editor](https://github.com/ekrem-bas/Basic-Image-Editor-Python-Project/assets/145195096/094865b0-e7cb-4ac8-a7b2-e2911f77bd1e)
 
-- **Open Image:** Load JPEG or PNG images into the editor.
-- **Save Image:** Save the edited image in PNG or JPEG format.
-- **Draw:** Draw on the image with a configurable pen size and color.
-- **Crop:** Select and crop a portion of the image.
-- **Rotate:** Rotate the image 90 degrees counterclockwise.
-- **Add Text:** Add custom text to the image.
-- **Filters:** Apply various filters such as Black and White, Blur, Sharpen, Smooth, Emboss, Contour, Edge Enhance, and Detail.
-- **Clear Canvas:** Reset the image to its original state before modifications.
+## Key Features
 
-## Installation
+-   **File Operations**: Open JPEG and PNG image files. Save the final edited image back to your disk in either PNG or JPEG format.
+-   **Drawing Tools**: Engage a freehand drawing mode to draw directly on the image. You can customize the pen size and color.
+-   **Image Transformation**:
+    -   **Crop**: Select a rectangular area on the image with your mouse to crop it.
+    -   **Rotate**: Rotate the entire image 90 degrees counter-clockwise with a single click.
+-   **Text Annotation**: Add custom text overlays onto the image. The application allows you to draw a rectangle to define the text area and choose a font color.
+-   **Image Filters**: Apply a wide range of filters to alter the look and feel of your image. A dedicated window allows you to preview filters before applying them. Available filters include:
+    -   Black and White
+    -   Blur
+    -   Sharpen
+    -   Smooth
+    -   Emboss
+    -   Contour
+    -   Edge Enhance
+    -   Detail
+-   **Canvas Management**:
+    -   **Clear**: Revert all changes and restore the image to its original, unmodified state.
+    -   **Aspect Ratio Preservation**: The application intelligently resizes images to fit the canvas while maintaining their original aspect ratio, preventing distortion.
 
-1. Clone the repository:
+## Technologies Used
+
+-   **Python 3.x**
+-   **Tkinter**: For the graphical user interface (GUI).
+-   **Pillow (PIL Fork)**: The core library for all image manipulation tasks.
+
+## Setup and Installation
+
+Follow these steps to run the image editor on your local machine.
+
+1.  **Clone the repository:**
     ```sh
-    git clone https://github.com/ekrem-bas/Basic-Image-Editor-Python-Project.git
+    git clone https://github.com/ekrem-bas/Image-Editor.git
     cd image-editor
     ```
 
-2. Create and activate a virtual environment (optional but recommended):
+2.  **Create and activate a virtual environment (Recommended):**
+    This isolates the project dependencies from your global Python installation.
     ```sh
+    # For macOS/Linux
+    python3 -m venv venv
+    source venv/bin/activate
+
+    # For Windows
     python -m venv venv
-    source venv/bin/activate   # On Windows use `venv\Scripts\activate`
+    venv\Scripts\activate
     ```
 
-3. Install the required dependencies:
+3.  **Install the required dependencies:**
+    The necessary library is listed in `requirements.txt`.
     ```sh
     pip install -r requirements.txt
     ```
 
-4. Run the application:
+4.  **Run the application:**
     ```sh
-    python image_editor.py
+    python main.py
     ```
 
-## Dependencies
+## How to Use
 
-- Python 3.x
-- Tkinter (comes pre-installed with Python)
-- Pillow
-
-You can install Pillow using:
-```sh
-pip install Pillow
-```
-
-## Usage
-
-1. **Open Image:** Click on "Add Image" button to load an image.
-2. **Draw:** Click on "Draw" button, then use the mouse to draw on the image. Adjust the pen size and color using the respective options.
-3. **Crop:** Click on "Crop" button, draw a rectangle on the image, and release to crop the selected area.
-4. **Rotate:** Click on "Rotate" button to rotate the image 90 degrees counterclockwise.
-5. **Add Text:** Click on "Add Text" button, draw a rectangle to define text area, enter the text, and choose font color.
-6. **Filters:** Click on "Select a filter" button, choose a filter from the menu, and apply it to the image.
-7. **Clear Canvas:** Click on "Clear" button to revert the image to its original state.
-8. **Save Image:** Click on "Save" button to save the edited image.
+1.  **Open an Image**: Click the **"Add Image"** button to load a `.jpeg` or `.png` file.
+2.  **Draw on the Image**:
+    -   Click **"Draw"** to activate drawing mode. Click it again to deactivate.
+    -   Use the **"Change Pen Color"** button to open a color picker.
+    -   Adjust the **"Change Pen Size"** spinbox to set the brush thickness.
+3.  **Crop the Image**:
+    -   Click **"Crop"** to enter cropping mode.
+    -   Click and drag your mouse over the image to draw a selection rectangle.
+    -   Release the mouse button to perform the crop.
+4.  **Add Text**:
+    -   Click **"Add Text"** to enable text mode.
+    -   Click and drag to draw a box where you want the text to appear.
+    -   An input dialog will prompt you to enter your text.
+    -   A color chooser will appear to let you select the font color.
+5.  **Apply Filters**:
+    -   Click the **"Select a filter"** button to open the filters menu.
+    -   Click on any filter name to see a live preview on the canvas.
+    -   Click **"Apply Filter"** to make the change permanent or **"Clear"** to revert.
+6.  **Rotate**: Click the **"Rotate"** button to turn the image 90 degrees counter-clockwise.
+7.  **Clear Changes**: Click the **"Clear"** button at any time to remove all edits and restore the original image.
+8.  **Save the Image**: Click the **"Save"** button to open a file dialog and save your work as a new PNG or JPEG file.
 
 ## Screenshots
 
