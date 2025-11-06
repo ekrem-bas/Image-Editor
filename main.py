@@ -1,6 +1,7 @@
 import tkinter as tk
 from tkinter import filedialog, colorchooser, simpledialog
 from PIL import Image, ImageTk, ImageDraw, ImageOps, ImageFilter, ImageFont
+import os
 
 # Window
 root = tk.Tk()
@@ -77,12 +78,31 @@ def open_image():
     
 def save_file():
     global processing_image
-    # save path
-    save_image_path = filedialog.asksaveasfilename(defaultextension=".png", filetypes=[("PNG files", "*.png"), ("JPEG files", "*.jpeg")])
+    # save path 
+    save_image_path = filedialog.asksaveasfilename(defaultextension="", filetypes=[("PNG files", "*.png"), ("JPEG files", "*.jpg *.jpeg")])
     if not save_image_path:
         return
+    # determine extension
+    base, ext = os.path.splitext(save_image_path)
+    ext = ext.lower()
+    img_to_save = processing_image
+    # if user didn't type an extension, ask which format they want
+    if ext == "":
+        fmt = simpledialog.askstring("Format", "No extension entered. Save as 'png' or 'jpg'?", initialvalue="png")
+        if not fmt:
+            return
+        fmt = fmt.strip().lower()
+        if fmt in ("jpg", "jpeg"):
+            ext = ".jpg"
+            save_image_path += ext
+        else:
+            ext = ".png"
+            save_image_path += ext
+    # JPEG does not support alpha channel -> convert to RGB
+    if ext in (".jpg", ".jpeg") and img_to_save.mode == "RGBA":
+        img_to_save = img_to_save.convert("RGB")
     # save processed image
-    processing_image.save(save_image_path)
+    img_to_save.save(save_image_path)
 
 def toggle_draw():
     # bind and unbind operation for draw
